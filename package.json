@@ -1,0 +1,28 @@
+{
+  "name": "discordytbot",
+  "version": "1.0.0",
+  "description": "Discord bot that plays music from youtube",
+  "main": "src/index.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JSom46/DiscordYTBot.git"
+  },
+  "keywords": [
+    "discord",
+    "youtube",
+    "bot",
+    "music"
+  ],
+  "author": "JSom",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JSom46/DiscordYTBot/issues"
+  },
+  "homepage": "https://github.com/JSom46/DiscordYTBot#readme",
+  "dependencies": {
+    "ytdl-core": "^4.11.2"
+  }
+}
