@@ -1,0 +1,17 @@
+name: Docker Build Check
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Checks whether the Docker image builds.
+        run: |
+          docker build .
