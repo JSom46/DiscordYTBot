@@ -1,7 +1,16 @@
 {
-  "main": "./src/index.mjs",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
   "dependencies": {
     "discord.js": "^14.7.1",
     "dotenv": "^16.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
   }
 }
