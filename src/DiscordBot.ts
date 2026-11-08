@@ -36,7 +36,7 @@ export default class DiscordBot {
 	}
 
 	private async loadCommands(): Promise<void> {
-		const files = (await fs.readdir(this.commandsPath)).filter(
+		const files = (await fs.readdir(this.commandsPath, { recursive: true })).filter(
 			file => (file.endsWith('.js') || file.endsWith('.ts')) && !file.endsWith('.d.ts')
 		);
 

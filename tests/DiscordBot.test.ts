@@ -73,7 +73,7 @@ describe('DiscordBot', () => {
 		assert.equal(typeof interactionListeners[0]?.arguments[1], 'function');
 	});
 
-	it('logs in the client, loads commands from default path, and deploys them via REST API on start()', async () => {
+	it('logs in the client, loads commands from default path (including subdirectories), and deploys them via REST API on start()', async () => {
 		const callOrder: string[] = [];
 
 		registerVirtualModule(
@@ -81,13 +81,13 @@ describe('DiscordBot', () => {
 			'export default { data: { name: "first" }, execute: async () => {} };'
 		);
 		registerVirtualModule(
-			'./commands/second.js',
+			'./commands/music/second.js',
 			'export default { data: { name: "second" }, execute: async () => {} };'
 		);
 
 		const readdirMock = mock.method(fs, 'readdir', async () => {
 			callOrder.push('load');
-			return ['first.ts', 'second.js'] as unknown as Awaited<ReturnType<typeof fs.readdir>>;
+			return ['first.ts', 'music', 'music/second.js'] as unknown as Awaited<ReturnType<typeof fs.readdir>>;
 		});
 		const loginMock = mock.method(Client.prototype, 'login', async (token?: string) => {
 			callOrder.push('login');
@@ -111,6 +111,7 @@ describe('DiscordBot', () => {
 		assert.equal(readdirMock.mock.callCount(), 1);
 		const calledPath = String(readdirMock.mock.calls[0]?.arguments[0]);
 		assert.equal(path.basename(calledPath), 'commands');
+		assert.deepEqual(readdirMock.mock.calls[0]?.arguments[1], { recursive: true });
 
 		assert.equal(setTokenMock.mock.callCount(), 1);
 		assert.deepEqual(setTokenMock.mock.calls[0]?.arguments, ['bot-secret-token']);
@@ -130,7 +131,7 @@ describe('DiscordBot', () => {
 			'export default { execute: async () => {} };'
 		);
 		registerVirtualModule(
-			'./commands/missingExecute.ts',
+			'./commands/sub/missingExecute.ts',
 			'export default { data: { name: "broken" } };'
 		);
 		registerVirtualModule(
@@ -138,15 +139,16 @@ describe('DiscordBot', () => {
 			'export const somethingElse = 42;'
 		);
 		registerVirtualModule(
-			'./commands/validCmd.ts',
+			'./commands/sub/validCmd.ts',
 			'export default { data: { name: "valid" }, execute: async () => {} };'
 		);
 
 		const readdirMock = mock.method(fs, 'readdir', async () => [
 			'missingData.js',
-			'missingExecute.ts',
+			'sub',
+			'sub/missingExecute.ts',
 			'noDefault.js',
-			'validCmd.ts',
+			'sub/validCmd.ts',
 			'types.d.ts',
 			'README.md',
 			'config.json',
@@ -162,11 +164,11 @@ describe('DiscordBot', () => {
 		await bot.start();
 
 		assert.equal(readdirMock.mock.callCount(), 1);
-		assert.deepEqual(readdirMock.mock.calls[0]?.arguments, ['/custom/commands/path']);
+		assert.deepEqual(readdirMock.mock.calls[0]?.arguments, ['/custom/commands/path', { recursive: true }]);
 
 		assert.equal(warnMock.mock.callCount(), 3);
 		assert.deepEqual(warnMock.mock.calls[0]?.arguments, ['missingData.js does not contain valid command']);
-		assert.deepEqual(warnMock.mock.calls[1]?.arguments, ['missingExecute.ts does not contain valid command']);
+		assert.deepEqual(warnMock.mock.calls[1]?.arguments, ['sub/missingExecute.ts does not contain valid command']);
 		assert.deepEqual(warnMock.mock.calls[2]?.arguments, ['noDefault.js does not contain valid command']);
 
 		assert.equal(putMock.mock.callCount(), 1);
