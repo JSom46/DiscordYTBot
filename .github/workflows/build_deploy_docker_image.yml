@@ -67,6 +67,13 @@ jobs:
             # Pull the latest image (ensure your GHCR package is public, or log in if private)
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
+            # Fetch the Discord secrets
+            SECRET_BASE64=$(oci secrets secret-bundle get --secret-id ${{ secrets.OCI_SECRET_ID_DISCORD_APP_ID }} --auth instance_principal --raw-output --query "data.\"secret-bundle-content\".content")
+            DISCORD_APP_ID=$(echo "$SECRET_BASE64" | base64 --decode)
+
+            SECRET_BASE64=$(oci secrets secret-bundle get --secret-id ${{ secrets.OCI_SECRET_ID_DISCORD_BOT_TOKEN }} --auth instance_principal --raw-output --query "data.\"secret-bundle-content\".content")
+            DISCORD_BOT_TOKEN=$(echo "$SECRET_BASE64" | base64 --decode)
+
             # Stop and remove the old container if it exists
             docker stop app-container || true
             docker rm app-container || true
@@ -75,6 +82,8 @@ jobs:
             docker run -d \
               --name app-container \
               -p 80:80 \
+              -e TOKEN="$DISCORD_BOT_TOKEN" \
+              -e APP_ID="$DISCORD_APP_ID" \
               --restart always \
               ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
