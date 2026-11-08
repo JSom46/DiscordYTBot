@@ -1,18 +1,15 @@
 await import('dotenv').then(res => res.config());
 
+import path from 'path';
+import { fileURLToPath } from 'url';
 import DiscordBot from './DiscordBot.js';
-import loadCommands from './loadCommands.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const token = process.env.TOKEN;
 const appId = process.env.APP_ID;
+const commandsPath = path.join(__dirname, 'commands');
 
-if (!token) {
-	throw new Error('Missing TOKEN environment variable.');
-}
-if (!appId) {
-	throw new Error('Missing APP_ID environment variable.');
-}
-
-const commands = await loadCommands();
-const bot = new DiscordBot(commands, { token, appId });
+const bot = new DiscordBot({ token, appId }, commandsPath);
 await bot.start();
